@@ -1,0 +1,521 @@
+  <!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rythme">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f5efe3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Rythme</title>
+<style>
+:root{--paper:#f5efe3;--card:#fffcf6;--ink:#1f1c18;--muted:#776e62;--line:#ddd2c0;--accent:#c4512d;--accent-soft:#f6dfd4;--good:#2e7d4f;--ok:#c08a17;--bad:#b3261e}
+*{box-sizing:border-box}
+html,body{overscroll-behavior:none}
+body{margin:0;touch-action:manipulation;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:var(--paper);color:var(--ink);font:15px/1.5 -apple-system,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-family:ui-serif,"New York",Georgia,serif;font-weight:700;font-size:34px;margin:0;letter-spacing:-.5px}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:2px 0 0}
+.stats{font-size:13px;color:var(--muted);text-align:right}
+.stats b{color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px 20px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+select{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.tempo{display:flex;align-items:center;gap:8px}
+.tempo input{flex:1;min-width:60px;accent-color:var(--accent)}
+.tempo output{font-family:ui-serif,"New York",Georgia,serif;font-size:20px;font-weight:700;min-width:36px;text-align:right;color:var(--ink);text-transform:none;letter-spacing:0}
+.mini{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;color:var(--ink)}
+.toggles{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.toggles label{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.toggles input{accent-color:var(--accent);width:16px;height:16px}
+#score{display:flex;flex-wrap:wrap;justify-content:center;gap:0;min-height:130px;padding:6px 0}
+#score svg{max-width:100%;height:auto;overflow:visible}
+.staff{stroke:var(--ink);stroke-width:1.3}
+.bar{stroke:var(--ink);stroke-width:1.5}
+.ts{font-family:ui-serif,"New York",Georgia,serif;font-weight:700;font-size:23px;text-anchor:middle;fill:var(--ink)}
+.cnt{font-size:12px;fill:var(--muted);text-anchor:middle;font-weight:500}
+.cnt.et{font-size:10px;fill:#aaa093}
+.tup{font-family:ui-serif,"New York",Georgia,serif;font-style:italic;font-size:14px;font-weight:700;text-anchor:middle;fill:var(--ink)}
+.ev{color:var(--ink);transition:color .06s}
+.ev.on{color:var(--accent)}
+.ev.r-good{color:var(--good)}.ev.r-ok{color:var(--ok)}.ev.r-off,.ev.r-miss{color:var(--bad)}
+.openhead{fill:var(--card)}
+.fbt{font-size:10px;text-anchor:middle;font-weight:600}
+.fbt.good{fill:var(--good)}.fbt.ok{fill:var(--ok)}.fbt.off,.fbt.miss{fill:var(--bad)}
+.transport{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px}
+.btn{font:inherit;font-weight:600;font-size:15px;padding:11px 18px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(.95)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn kbd{font:11px -apple-system,sans-serif;opacity:.65;border:1px solid currentColor;border-radius:4px;padding:0 4px}
+#status{text-align:center;height:24px;margin-top:10px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+#pad{margin:14px auto 0;max-width:520px;height:110px;border-radius:14px;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--muted);user-select:none;-webkit-user-select:none;touch-action:manipulation;cursor:pointer;text-align:center;padding:0 16px;transition:background .05s,border-color .2s}
+#pad.armed{border-color:var(--accent);color:var(--ink);border-style:solid}
+#pad.hit{background:var(--accent-soft)}
+#pad strong{font-family:ui-serif,"New York",Georgia,serif;font-size:20px}
+#result{display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:16px;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center}
+#result.show{display:flex}
+.big{font-family:ui-serif,"New York",Georgia,serif;font-size:52px;font-weight:700;line-height:1}
+.rmsg{font-weight:600;font-size:17px}
+.rdet{color:var(--muted);font-size:14px}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted);justify-content:center;margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+details{margin-top:4px}
+summary{cursor:pointer;font-weight:600}
+.lat{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.lat input{accent-color:var(--accent);width:220px}
+h2{font-family:ui-serif,"New York",Georgia,serif;font-size:22px;margin:0 0 4px}
+.memo{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:12px}
+.fig{border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:10px;background:#fff}
+.fig svg{flex:none}
+.fig .n{font-weight:600}
+.fig .d{color:var(--muted);font-size:13px}
+.tip{color:var(--muted);font-size:13.5px;margin:10px 0 0}
+.help{font-size:14px;color:var(--muted)}
+.help li{margin:3px 0}
+.touch-only{display:none}
+@media (hover:none){kbd,.kbd-only{display:none!important}.touch-only{display:inline}}
+@media (max-width:600px){
+ .wrap{padding:16px 12px 40px;display:flex;flex-direction:column}
+ #play{order:-1}
+ header{order:-2}
+ h1{font-size:28px}
+ header{margin-bottom:12px}
+ .stats{text-align:left}
+ .card{padding:14px;border-radius:12px}
+ .controls{grid-template-columns:1fr 1fr;gap:12px}
+ .controls label.f:first-child,.controls label.f:last-child{grid-column:1/-1}
+ .toggles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .toggles label{font-size:13.5px}
+ .transport{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .btn{justify-content:center;padding:13px 10px}
+ #pad{height:170px}
+ .big{font-size:44px}
+ .memo{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Atelier <span>Rythme</span></h1>
+    <p class="sub">Lecture rythmique — écoute, puis frappe le rythme en tapant.</p>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<section class="card">
+  <div class="controls">
+    <label class="f">Niveau
+      <select id="level">
+        <option value="1">1 · Noires, blanches, croches</option>
+        <option value="2">2 · + contretemps, valeurs pointées</option>
+        <option value="3">3 · + doubles croches</option>
+        <option value="4">4 · + triolets, syncopes</option>
+      </select>
+    </label>
+    <label class="f">Mesure
+      <select id="beats"><option value="2">2/4</option><option value="3">3/4</option><option value="4">4/4</option></select>
+    </label>
+    <label class="f">Longueur
+      <select id="measures"><option value="1">1 mesure</option><option value="2">2 mesures</option><option value="4">4 mesures</option></select>
+    </label>
+    <label class="f">Tempo (noire)
+      <span class="tempo"><button class="mini" id="tdown" aria-label="Ralentir">−</button><input type="range" id="tempo" min="40" max="180" step="1"><button class="mini" id="tup" aria-label="Accélérer">+</button><output id="tempoOut"></output></span>
+    </label>
+  </div>
+  <div class="toggles">
+    <label><input type="checkbox" id="rests"> Silences</label>
+    <label><input type="checkbox" id="swing"> Swing (croches ternaires)</label>
+    <label><input type="checkbox" id="metro"> Métronome</label>
+    <label><input type="checkbox" id="hear"> Entendre le rythme quand je joue</label>
+    <label><input type="checkbox" id="loop"> Écoute en boucle</label>
+    <label><input type="checkbox" id="count"> Afficher le comptage</label>
+  </div>
+</section>
+
+<section class="card" id="play">
+  <div id="score" aria-label="Partition rythmique"></div>
+  <div class="transport">
+    <button class="btn" id="btnNew">↻ Nouveau rythme <kbd>N</kbd></button>
+    <button class="btn" id="btnListen">▶ Écouter <kbd>E</kbd></button>
+    <button class="btn primary" id="btnTap">● Jouer <kbd>T</kbd></button>
+    <button class="btn" id="btnStop" disabled>■ Stop <kbd>Échap</kbd></button>
+  </div>
+  <div id="status"></div>
+  <div id="pad" role="button" aria-label="Zone de frappe"><strong>Zone de frappe</strong><span class="kbd-only">Clique « Jouer », attends le décompte, puis tape ici ou sur la barre d'espace</span><span class="touch-only">Touche ici pour lancer, attends le décompte, puis tape le rythme ici</span></div>
+  <div id="result">
+    <div class="big" id="rscore"></div>
+    <div><div class="rmsg" id="rmsg"></div><div class="rdet" id="rdet"></div><div class="rdet" id="rtrend"></div></div>
+  </div>
+  <div class="legend" id="legend" style="display:none"><span><i style="background:var(--good)"></i>juste (±35 ms)</span><span><i style="background:var(--ok)"></i>proche (±80 ms)</span><span><i style="background:var(--bad)"></i>décalée / manquée</span></div>
+</section>
+
+<section class="card">
+  <details>
+    <summary>Réglages de latence</summary>
+    <p class="help">Le Bluetooth et certaines cartes son retardent le son. Si tes frappes sont systématiquement notées « en retard » alors que tu es calé, calibre : tape 8 fois avec les clics.</p>
+    <div class="lat">
+      <input type="range" id="lat" min="-50" max="300" step="1">
+      <span><b id="latOut"></b> ms de compensation</span>
+      <button class="btn" id="btnCal">Calibrer</button>
+    </div>
+  </details>
+</section>
+
+<section class="card">
+  <h2>Mémo des valeurs</h2>
+  <p class="help" style="margin:0">Les durées sont exprimées en temps, avec la noire comme unité (mesures en /4).</p>
+  <div class="memo" id="memo"></div>
+  <p class="tip">Le point ajoute la moitié de la valeur de la note. Le triolet place 3 croches dans le temps de 2. En swing, la 2ᵉ croche de chaque temps est retardée (2/3 + 1/3), comme en jazz.</p>
+  <ul class="help">
+    <li><b>Méthode conseillée :</b> lis d'abord le rythme en comptant à voix haute, écoute-le une fois, puis joue-le sans l'entendre.</li>
+    <li>Les blanches et notes longues ne sont jugées que sur l'attaque : compte bien leur durée pour placer la suivante.</li>
+    <li class="kbd-only">Raccourcis : <b>N</b> nouveau · <b>E</b> écouter · <b>T</b> jouer · <b>Espace</b> taper · <b>Échap</b> stop.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const Y=60,H=132,BW=72,PADL=14,PADR=12;
+
+/* ---------- Réglages ---------- */
+const st={level:1,beats:4,measures:2,tempo:72,rests:true,swing:false,metro:true,hear:false,loop:true,count:true,lat:0};
+try{Object.assign(st,JSON.parse(localStorage.getItem('rythme-settings')||'{}'))}catch(e){}
+function save(){try{localStorage.setItem('rythme-settings',JSON.stringify(st))}catch(e){}}
+
+/* ---------- Bibliothèque de cellules (durées en temps, [durée, silence?]) ---------- */
+const T=1/3;
+const CELLS=[
+ {l:1,s:1,e:[[1]]},
+ {l:1,s:1,e:[[.5],[.5]]},
+ {l:1,s:2,e:[[2]]},
+ {l:1,s:4,e:[[4]]},
+ {l:1,s:1,e:[[1,1]],r:1},
+ {l:1,s:2,e:[[2,1]],r:1},
+ {l:2,s:1,e:[[.5,1],[.5]],r:1},
+ {l:2,s:1,e:[[.5],[.5,1]],r:1},
+ {l:2,s:2,e:[[1.5],[.5]]},
+ {l:2,s:3,e:[[3]]},
+ {l:3,s:1,e:[[.25],[.25],[.25],[.25]]},
+ {l:3,s:1,e:[[.5],[.25],[.25]]},
+ {l:3,s:1,e:[[.25],[.25],[.5]]},
+ {l:3,s:1,e:[[.75],[.25]]},
+ {l:3,s:1,e:[[.25],[.5],[.25]]},
+ {l:3,s:1,e:[[.5,1],[.25],[.25]],r:1},
+ {l:4,s:1,t:1,e:[[T],[T],[T]]},
+ {l:4,s:1,t:1,e:[[T,1],[T],[T]],r:1},
+ {l:4,s:2,e:[[.5],[1],[.5]]},
+ {l:4,s:1,e:[[.25],[.75]]},
+ {l:4,s:1,e:[[.25,1],[.25],[.25],[.25]],r:1},
+];
+function okPos(c,pos,beats){
+  if(c.s===4) return beats===4&&pos===0;
+  if(c.s===3) return pos===0;
+  if(c.s===2&&beats===4) return pos%2===0;
+  return true;
+}
+function weight(c,L){
+  let w=c.l===L?3:(L-c.l===1?1.6:1);
+  if(c.s>=3) w*=.35;
+  if(c.r) w*=.75;
+  if(L>=3&&c.l===1&&c.s>=2) w*=.5;
+  return w;
+}
+function pick(arr,w){let tot=w.reduce((a,b)=>a+b,0),r=Math.random()*tot;for(let i=0;i<arr.length;i++){r-=w[i];if(r<=0)return arr[i]}return arr[arr.length-1]}
+function genMeasure(){
+  for(let k=0;k<60;k++){
+    const cells=[];let pos=0;
+    while(pos<st.beats){
+      const rem=st.beats-pos;
+      const cand=CELLS.filter(c=>c.l<=st.level&&(st.rests||!c.r)&&c.s<=rem&&okPos(c,pos,st.beats));
+      const c=pick(cand,cand.map(x=>weight(x,st.level)));
+      cells.push({c,start:pos});pos+=c.s;
+    }
+    if(cells.some(x=>x.c.e.some(ev=>!ev[1]))) return cells;
+  }
+  return [{c:CELLS[0],start:0}];
+}
+
+let score=[],events=[],evEls={};
+function buildEvents(){
+  events=[];
+  score.forEach((cells,m)=>cells.forEach((cl,ci)=>{let t=0;cl.c.e.forEach((ev,ei)=>{
+    events.push({d:ev[0],rest:!!ev[1],onset:m*st.beats+cl.start+t,m,local:cl.start+t,id:`e${m}_${ci}_${ei}`});t+=ev[0];});}));
+}
+
+/* ---------- Gravure SVG ---------- */
+function noteSvg(x,d,flags){
+  const hx=x+8;let s='';
+  if(d>=4){s+=`<ellipse cx="${hx}" cy="${Y}" rx="7.6" ry="5" class="openhead" stroke="currentColor" stroke-width="2.4" transform="rotate(-15 ${hx} ${Y})"/>`;return s}
+  const open=d>=2;
+  s+=open?`<ellipse cx="${hx}" cy="${Y}" rx="6.4" ry="4.5" class="openhead" stroke="currentColor" stroke-width="1.9" transform="rotate(-22 ${hx} ${Y})"/>`
+         :`<ellipse cx="${hx}" cy="${Y}" rx="6.4" ry="4.6" fill="currentColor" transform="rotate(-22 ${hx} ${Y})"/>`;
+  const sx=hx+5.6;
+  s+=`<line x1="${sx}" y1="${Y-1.5}" x2="${sx}" y2="${Y-38}" stroke="currentColor" stroke-width="1.6"/>`;
+  if(flags&&d<1){const nf=d<.3?2:1;for(let k=0;k<nf;k++){const fy=Y-38+k*7;s+=`<path d="M${sx} ${fy} q1 8 8 12 q4 3 2 11" fill="none" stroke="currentColor" stroke-width="2"/>`}}
+  if(d===1.5||d===.75||d===3) s+=`<circle cx="${hx+11}" cy="${Y-4}" r="2.1" fill="currentColor"/>`;
+  return s;
+}
+function restSvg(x,d){
+  const cx=x+8;
+  if(d>=4) return `<rect x="${cx-6}" y="${Y}" width="12" height="5.5" fill="currentColor"/>`;
+  if(d>=2) return `<rect x="${cx-6}" y="${Y-5.5}" width="12" height="5.5" fill="currentColor"/>`;
+  if(d>=1) return `<path d="M${cx-3} ${Y-15} L${cx+3.5} ${Y-6} L${cx-2.5} ${Y+1} L${cx+3.5} ${Y+8} Q${cx-5} ${Y+5} ${cx-.5} ${Y+15}" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(d>=.3) return `<circle cx="${cx-3}" cy="${Y-6}" r="2.5" fill="currentColor"/><path d="M${cx-3} ${Y-4} Q${cx+1} ${Y-3} ${cx+4} ${Y-9} L${cx} ${Y+10}" fill="none" stroke="currentColor" stroke-width="1.7"/>`;
+  return `<circle cx="${cx-2}" cy="${Y-8}" r="2.4" fill="currentColor"/><path d="M${cx-2} ${Y-6} Q${cx+2} ${Y-5} ${cx+5} ${Y-11} L${cx-1} ${Y+12}" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="${cx-4.5}" cy="${Y+1}" r="2.4" fill="currentColor"/><path d="M${cx-4.5} ${Y+3} Q${cx-.5} ${Y+4} ${cx+2.3} ${Y-1}" fill="none" stroke="currentColor" stroke-width="1.7"/>`;
+}
+function drawCell(def,x0,bw,pref){
+  let out='',t=0;const items=[];
+  def.e.forEach((ev,i)=>{items.push({x:x0+t*bw,d:ev[0],r:!!ev[1],i});t+=ev[0]});
+  const beamable=def.s===1;const groups=[];let cur=[];
+  items.forEach(it=>{if(!it.r&&it.d<1&&beamable)cur.push(it);else{if(cur.length)groups.push(cur);cur=[]}});
+  if(cur.length)groups.push(cur);
+  const beamed=new Set();groups.filter(g=>g.length>1).forEach(g=>g.forEach(it=>beamed.add(it)));
+  items.forEach(it=>{out+=`<g class="ev" id="${pref}${it.i}">${it.r?restSvg(it.x,it.d):noteSvg(it.x,it.d,!beamed.has(it))}</g>`});
+  groups.filter(g=>g.length>1).forEach(g=>{
+    const sx=it=>it.x+13.6;
+    out+=`<rect x="${sx(g[0])-.8}" y="${Y-40}" width="${sx(g[g.length-1])-sx(g[0])+1.6}" height="4.6" fill="var(--ink)"/>`;
+    g.forEach((it,k)=>{
+      if(it.d!==.25)return;
+      const nx=g[k+1],pv=g[k-1];
+      if(nx&&nx.d===.25) out+=`<rect x="${sx(it)-.8}" y="${Y-32.5}" width="${sx(nx)-sx(it)+1.6}" height="4.6" fill="var(--ink)"/>`;
+      else if(!(pv&&pv.d===.25)){const a=nx?sx(it):sx(it)-9;out+=`<rect x="${a-.8}" y="${Y-32.5}" width="10.6" height="4.6" fill="var(--ink)"/>`}
+    });
+  });
+  if(def.t){const cx=(items[0].x+items[items.length-1].x)/2+13.6;out+=`<text x="${cx}" y="${Y-46}" class="tup">3</text>`}
+  return out;
+}
+function measureX(m){return (m===0?36:0)+PADL}
+function renderScore(){
+  let html='';
+  score.forEach((cells,m)=>{
+    const ts=m===0?36:0,w=ts+PADL+st.beats*BW+PADR,last=m===score.length-1;
+    let s=`<svg viewBox="0 0 ${w} ${H}" width="${w}" height="${H}" role="img">`;
+    s+=`<line x1="0" x2="${w}" y1="${Y}" y2="${Y}" class="staff"/>`;
+    if(ts) s+=`<text x="18" y="${Y-3}" class="ts">${st.beats}</text><text x="18" y="${Y+19}" class="ts">4</text>`;
+    if(st.count) for(let b=0;b<st.beats;b++){const bx=ts+PADL+b*BW+8;s+=`<text x="${bx}" y="${Y+60}" class="cnt">${b+1}</text>`;if(st.level>=2)s+=`<text x="${bx+BW/2}" y="${Y+60}" class="cnt et">et</text>`}
+    cells.forEach((cl,ci)=>{s+=drawCell(cl.c,ts+PADL+cl.start*BW,BW,`e${m}_${ci}_`)});
+    s+=`<g id="fb${m}"></g>`;
+    if(last) s+=`<line x1="${w-7}" x2="${w-7}" y1="${Y-20}" y2="${Y+20}" class="bar"/><rect x="${w-4}" y="${Y-20}" width="4" height="40" fill="var(--ink)"/>`;
+    else s+=`<line x1="${w-.75}" x2="${w-.75}" y1="${Y-20}" y2="${Y+20}" class="bar"/>`;
+    html+=s+'</svg>';
+  });
+  $('#score').innerHTML=html;
+  evEls={};events.forEach(e=>evEls[e.id]=document.getElementById(e.id));
+}
+function clearFeedback(){
+  score.forEach((_,m)=>{const g=document.getElementById('fb'+m);if(g)g.innerHTML=''});
+  Object.values(evEls).forEach(el=>el&&el.classList.remove('r-good','r-ok','r-off','r-miss'));
+  $('#result').classList.remove('show');$('#legend').style.display='none';
+}
+
+/* ---------- Audio ---------- */
+let ctx=null,bus=null;
+let unlockEl=null,wake=null;
+function ensureCtx(){
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+  if(!unlockEl){try{unlockEl=new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA');unlockEl.loop=true;unlockEl.setAttribute('playsinline','');unlockEl.play().catch(()=>{})}catch(e){}}
+  if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+  if(ctx.state!=='running')ctx.resume();
+}
+async function keepAwake(on){try{if(on&&!wake&&navigator.wakeLock){wake=await navigator.wakeLock.request('screen')}else if(!on&&wake){await wake.release();wake=null}}catch(e){wake=null}}
+function outLat(){return ctx.outputLatency||ctx.baseLatency||0}
+function click(t,acc){
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=acc?1760:1150;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(acc?.45:.28,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.05);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+.06);
+}
+function tone(t,dur){
+  const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain(),g2=ctx.createGain();
+  o.type='triangle';o.frequency.value=392;o2.type='sine';o2.frequency.value=784;g2.gain.value=.22;
+  o.connect(g);o2.connect(g2);g2.connect(g);g.connect(bus);
+  const end=t+Math.max(.06,dur*.88),dec=Math.min(.12,(end-t)*.6);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.008);g.gain.exponentialRampToValueAtTime(.17,t+dec);
+  g.gain.setValueAtTime(.17,end);g.gain.exponentialRampToValueAtTime(.0001,end+.05);
+  o.start(t);o2.start(t);o.stop(end+.07);o2.stop(end+.07);
+}
+function tapSound(){
+  if(!bus)return;const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=300;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+.07);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+.08);
+}
+function bt(b){const f=Math.floor(b+1e-9),r=b-f;return(st.swing&&Math.abs(r-.5)<1e-6)?f+2/3:b}
+
+/* ---------- Lecture ---------- */
+let run=null,raf=0,active=new Set();
+function setStatus(s){$('#status').textContent=s}
+function clearHighlights(){active.forEach(id=>evEls[id]&&evEls[id].classList.remove('on'));active.clear()}
+function updateButtons(){
+  $('#btnStop').disabled=!run;
+  $('#pad').classList.toggle('armed',!!run&&(run.kind==='tap'||run.kind==='calib'));
+}
+function stop(){
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  if(bus&&ctx){const b=bus;try{b.gain.setValueAtTime(1,ctx.currentTime);b.gain.linearRampToValueAtTime(0,ctx.currentTime+.03)}catch(e){}setTimeout(()=>{try{b.disconnect()}catch(e){}},90)}
+  bus=null;run=null;keepAwake(false);clearHighlights();setStatus('');updateButtons();
+}
+function start(kind){
+  ensureCtx();stop();
+  bus=ctx.createGain();bus.connect(ctx.destination);
+  const tempo=kind==='calib'?90:st.tempo,spb=60/tempo,t0=ctx.currentTime+.15,cin=kind==='calib'?4:st.beats,ps=t0+cin*spb;
+  for(let i=0;i<cin;i++)click(t0+i*spb,i===0);
+  const total=kind==='calib'?8:st.measures*st.beats;
+  run={kind,spb,t0,ps,total,taps:[],passes:[ps]};
+  if(kind==='calib'){for(let i=0;i<8;i++)click(ps+i*spb,i%4===0)}
+  else{if(kind==='tap')clearFeedback();schedulePass(ps)}
+  keepAwake(true);updateButtons();raf=requestAnimationFrame(tick);
+}
+function schedulePass(p){
+  const spb=run.spb;
+  if(run.kind==='listen'||st.hear) events.forEach(e=>{if(!e.rest)tone(p+bt(e.onset)*spb,(bt(e.onset+e.d)-bt(e.onset))*spb)});
+  if(st.metro) for(let b=0;b<run.total;b++)click(p+b*spb,b%st.beats===0);
+}
+function tick(){
+  if(!run)return;
+  const now=ctx.currentTime,spb=run.spb,len=run.total*spb;
+  if(now<run.ps){const k=Math.floor((now-run.t0)/spb)+1;setStatus(k>=1?`Décompte… ${k}`:'Prêt…')}
+  else if(run.kind==='calib'){setStatus(`Tape avec les clics — ${Math.min(8,Math.floor((now-run.ps)/spb)+1)} / 8`)}
+  else{
+    let p=run.ps;for(const x of run.passes)if(x<=now)p=x;
+    const pos=(now-p)/spb;
+    if(pos<run.total){const m=Math.floor(pos/st.beats),b=Math.floor(pos%st.beats);setStatus(`Mesure ${m+1} · temps ${b+1}`)}
+    const next=new Set();
+    events.forEach(e=>{const a=p+bt(e.onset)*spb,z=p+bt(e.onset+e.d)*spb;if(now>=a&&now<z)next.add(e.id)});
+    active.forEach(id=>{if(!next.has(id))evEls[id]&&evEls[id].classList.remove('on')});
+    next.forEach(id=>{if(!active.has(id))evEls[id]&&evEls[id].classList.add('on')});
+    active=next;
+  }
+  if(run.kind==='listen'){
+    const last=run.passes[run.passes.length-1];
+    if(st.loop&&now>last+len-.25){const np=last+len;run.passes.push(np);schedulePass(np)}
+    else if(!st.loop&&now>last+len+.05){stop();return}
+  }else if(run.kind==='tap'){if(now>run.ps+len+Math.min(.3,spb*.6)){evaluate();stop();return}}
+  else if(run.kind==='calib'){if(now>run.ps+len+.3){calibEnd();stop();return}}
+  raf=requestAnimationFrame(tick);
+}
+
+/* ---------- Frappe & évaluation ---------- */
+const pad=$('#pad');
+function onTap(){
+  if(!run||(run.kind!=='tap'&&run.kind!=='calib'))return;
+  const t=ctx.currentTime-outLat()-(run.kind==='calib'?0:st.lat/1000);
+  run.taps.push(t);tapSound();
+  pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90);
+}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();if(run&&(run.kind==='tap'||run.kind==='calib'))onTap();else start('tap')});
+
+function evaluate(){
+  const spb=run.spb,ps=run.ps;
+  const exp=events.filter(e=>!e.rest).map(e=>({e,t:ps+bt(e.onset)*spb}));
+  const taps=run.taps.slice().sort((a,b)=>a-b),used=taps.map(()=>false),res=[];
+  exp.forEach((x,i)=>{
+    const gp=i>0?x.t-exp[i-1].t:Infinity,gn=i<exp.length-1?exp[i+1].t-x.t:Infinity;
+    const win=Math.min(.25,.5*Math.min(gp,gn));let best=-1,bd=1e9;
+    taps.forEach((tp,j)=>{if(used[j])return;const dd=Math.abs(tp-x.t);if(dd<=win&&dd<bd){bd=dd;best=j}});
+    if(best>=0){used[best]=true;const err=(taps[best]-x.t)*1000,a=Math.abs(err);res.push({x,err,cls:a<=35?'good':a<=80?'ok':'off'})}
+    else res.push({x,err:null,cls:'miss'});
+  });
+  const extra=taps.filter((tp,j)=>!used[j]&&tp>ps-.3).length;
+  const n=res.length,cnt={good:0,ok:0,off:0,miss:0};res.forEach(r=>cnt[r.cls]++);
+  const pts=cnt.good+.6*cnt.ok+.2*cnt.off-.25*extra;
+  const pct=Math.max(0,Math.round(100*pts/n));
+  // affichage sur la partition
+  res.forEach(r=>{
+    const e=r.x.e,el=evEls[e.id];if(el)el.classList.add('r-'+r.cls);
+    const g=document.getElementById('fb'+e.m);if(!g)return;
+    const x=measureX(e.m)+e.local*BW+8;
+    const txt=r.err===null?'—':(r.err>0?'+':'')+Math.round(r.err);
+    g.insertAdjacentHTML('beforeend',`<text x="${x}" y="${Y+33}" class="fbt ${r.cls}">${txt}</text>`);
+  });
+  const matched=res.filter(r=>r.err!==null);
+  let trend='';
+  if(matched.length>=2){const avg=matched.reduce((a,r)=>a+r.err,0)/matched.length;
+    trend=Math.abs(avg)<15?'Placement moyen bien centré.':`Tendance : ${avg<0?'en avance':'en retard'} de ${Math.round(Math.abs(avg))} ms en moyenne.`}
+  const msg=pct>=90?'Excellent, rythme maîtrisé !':pct>=70?'Bien joué — encore un peu de précision.':pct>=50?'Presque — réécoute puis recommence.':'Essaie plus lentement, en comptant à voix haute.';
+  $('#rscore').textContent=pct+' %';$('#rscore').style.color=pct>=70?'var(--good)':pct>=50?'var(--ok)':'var(--bad)';
+  $('#rmsg').textContent=msg;
+  $('#rdet').textContent=`${cnt.good} juste${cnt.good>1?'s':''} · ${cnt.ok} proche${cnt.ok>1?'s':''} · ${cnt.off} décalée${cnt.off>1?'s':''} · ${cnt.miss} manquée${cnt.miss>1?'s':''} · ${extra} frappe${extra>1?'s':''} en trop`;
+  $('#rtrend').textContent=trend+' Écarts en ms (− = en avance).';
+  $('#result').classList.add('show');$('#legend').style.display='flex';
+  addStat(pct);
+}
+function calibEnd(){
+  const spb=run.spb,offs=[];
+  for(let i=0;i<8;i++){const t=run.ps+i*spb;let best=null;run.taps.forEach(tp=>{const d=tp-t;if(Math.abs(d)<.25&&(best===null||Math.abs(d)<Math.abs(best)))best=d});if(best!==null)offs.push(best)}
+  if(offs.length<5){setTimeout(()=>setStatus('Calibration incomplète : tape au moins 5 fois avec les clics.'),20);return}
+  offs.sort((a,b)=>a-b);const med=offs[Math.floor(offs.length/2)]*1000;
+  st.lat=Math.max(-50,Math.min(300,Math.round(med)));save();syncUI();
+  setTimeout(()=>setStatus(`Calibration faite : ${st.lat} ms de compensation.`),20);
+}
+
+/* ---------- Stats ---------- */
+function getStats(){try{return JSON.parse(localStorage.getItem('rythme-stats')||'null')||{n:0,sum:0,best:0}}catch(e){return{n:0,sum:0,best:0}}}
+function addStat(p){const s=getStats();s.n++;s.sum+=p;s.best=Math.max(s.best,p);try{localStorage.setItem('rythme-stats',JSON.stringify(s))}catch(e){}showStats(s)}
+function showStats(s){s=s||getStats();$('#stats').innerHTML=s.n?`<b>${s.n}</b> essai${s.n>1?'s':''} · moyenne <b>${Math.round(s.sum/s.n)} %</b> · record <b>${s.best} %</b>`:'Aucun essai pour l\'instant'}
+
+/* ---------- Mémo ---------- */
+const MEMO=[
+ ['Ronde','4 temps',{s:4,e:[[4]]},'Pause',{s:4,e:[[4,1]]}],
+ ['Blanche','2 temps',{s:2,e:[[2]]},'Demi-pause',{s:2,e:[[2,1]]}],
+ ['Blanche pointée','3 temps',{s:3,e:[[3]]}],
+ ['Noire pointée','1 temps ½',{s:2,e:[[1.5]]}],
+ ['Noire','1 temps',{s:1,e:[[1]]},'Soupir',{s:1,e:[[1,1]]}],
+ ['Croche','½ temps',{s:1,e:[[.5]]},'Demi-soupir',{s:1,e:[[.5,1]]}],
+ ['Croche pointée','¾ de temps',{s:1,e:[[.75]]}],
+ ['Double croche','¼ de temps',{s:1,e:[[.25]]},'Quart de soupir',{s:1,e:[[.25,1]]}],
+ ['Triolet de croches','3 notes dans 1 temps',{s:1,t:1,e:[[T],[T],[T]]}],
+];
+function miniSvg(def,w){return `<svg viewBox="0 8 ${w} 84" width="${w*.85}" height="72">${`<line x1="0" x2="${w}" y1="${Y}" y2="${Y}" class="staff"/>`}${drawCell(def,6,def.t?40:30,'m')}</svg>`}
+$('#memo').innerHTML=MEMO.map(([n,d,def,rn,rdef])=>`<div class="fig">${miniSvg(def,def.t?110:40)}<div><div class="n">${n}</div><div class="d">${d}</div></div>${rn?`${miniSvg(rdef,40)}<div><div class="n">${rn}</div><div class="d">silence</div></div>`:''}</div>`).join('');
+
+/* ---------- UI ---------- */
+function syncUI(){
+  $('#level').value=st.level;$('#beats').value=st.beats;$('#measures').value=st.measures;
+  $('#tempo').value=st.tempo;$('#tempoOut').textContent=st.tempo;
+  ['rests','swing','metro','hear','loop','count'].forEach(k=>$('#'+k).checked=st[k]);
+  $('#lat').value=st.lat;$('#latOut').textContent=st.lat;
+}
+function newRhythm(){stop();score=[];for(let m=0;m<st.measures;m++)score.push(genMeasure());buildEvents();renderScore();clearFeedback()}
+['level','beats','measures'].forEach(k=>$('#'+k).addEventListener('change',e=>{st[k]=+e.target.value;save();newRhythm()}));
+$('#rests').addEventListener('change',e=>{st.rests=e.target.checked;save();newRhythm()});
+['swing','metro','hear','loop'].forEach(k=>$('#'+k).addEventListener('change',e=>{st[k]=e.target.checked;save()}));
+$('#count').addEventListener('change',e=>{st.count=e.target.checked;save();stop();renderScore()});
+function setTempo(v){st.tempo=Math.max(40,Math.min(180,v));$('#tempo').value=st.tempo;$('#tempoOut').textContent=st.tempo;save()}
+$('#tempo').addEventListener('input',e=>setTempo(+e.target.value));
+$('#tdown').addEventListener('click',()=>setTempo(st.tempo-4));
+$('#tup').addEventListener('click',()=>setTempo(st.tempo+4));
+$('#lat').addEventListener('input',e=>{st.lat=+e.target.value;$('#latOut').textContent=st.lat;save()});
+$('#btnNew').addEventListener('click',newRhythm);
+$('#btnListen').addEventListener('click',()=>start('listen'));
+$('#btnTap').addEventListener('click',e=>{e.currentTarget.blur();start('tap')});
+$('#btnStop').addEventListener('click',stop);
+$('#btnCal').addEventListener('click',e=>{e.currentTarget.blur();start('calib')});
+
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){stop();return}
+  const tapping=run&&(run.kind==='tap'||run.kind==='calib');
+  if(tapping){if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;e.preventDefault();onTap();return}
+  const tag=(e.target.tagName||'').toLowerCase();if(tag==='select'||tag==='input')return;
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==='n'){newRhythm()}else if(k==='e'){start('listen')}else if(k==='t'||e.code==='Space'){e.preventDefault();start('tap')}
+});
+
+syncUI();showStats();newRhythm();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+})();
+</script>
+</body>
+</html>
